@@ -4,6 +4,7 @@ class Blockchain
     constructor()
     {
         this.chain = [this.createGenesisBlock()];
+        this.difficulty = 4;
 
     }
 
@@ -19,7 +20,8 @@ class Blockchain
     addBlock(newBlock)
     {
         newBlock.prevHash = this.getLatestBlock().hash;
-        newBlock.hash = newBlock.calculateHash();
+        // newBlock.hash = newBlock.calculateHash();
+        newBlock.mineBlock(this.difficulty)
         this.chain.push(newBlock);
 
     }
@@ -45,10 +47,18 @@ class Blockchain
 }
 
 let YERcoin = new Blockchain();
+
+console.log("Mining Block 1...")
 YERcoin.addBlock(new Block(1 ,"02/01/2026" , {amount: 4}));
+console.log("Mining Block 2...")
 YERcoin.addBlock(new Block(2 ,"03/01/2026" , {amount: 10}));
 
-// console.log("Is the block chain valid?" + YERcoin.isValidBlock());
+//checking if the chains are contigious
+// console.log("Is the block chain valid?" + YERcoin.isValidBlock()); 
+
+//tempering the chain
+//YERcoin.chain[1].data = {amount : 100};
+// console.log("Is the block chain valid?" + YERcoin.isValidBlock()); -> false , tempering detected 
 
 console.log(JSON.stringify(YERcoin , null , 4));
 export default Blockchain;
