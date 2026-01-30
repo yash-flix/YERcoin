@@ -37,7 +37,7 @@ class Blockchain
         this.chain.push(block);
 
         this.pendingTransactions = [
-            new Transaction(null , miningRewardAddress , this.miningReward)
+            new Transaction(null , minerAddress , this.miningReward)
         ];
     }
 
@@ -53,11 +53,11 @@ class Blockchain
         {
             for(const trans of block.transactions)
             {
-                if(block.fromAddress === address)
+                if(trans.fromAddress === address)
                 {
                     balance -= trans.amount;
                 }
-                if(block.toAddress === address)
+                if(trans.toAddress === address)
                 {
                     balance += trans.amount;
                 }
