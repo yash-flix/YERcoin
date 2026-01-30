@@ -1,6 +1,8 @@
 import SHA256 from "crypto-js/sha256.js";
-const EC = require("elliptic").ec;
-const ec = new EC('secp256k1');
+import pkg from "elliptic";
+const { ec } = pkg;
+
+const EC = new ec('secp256k1');
 
 class Transaction{
     constructor(fromAddress , toAddress , amount)
@@ -31,7 +33,7 @@ class Transaction{
         {
             throw new Error("No signature in this transaction");
         }
-        const publicKey = ec.keyFromPublic(this.fromAddress , 'hex');
+        const publicKey = EC.keyFromPublic(this.fromAddress , 'hex');
         return publicKey.verify(this.calculateHash() , this.signature);
     }
 }

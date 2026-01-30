@@ -1,5 +1,9 @@
 import Block from './Block.js';
 import Transaction from './Transaction.js';
+import pkg from 'elliptic';
+const { ec: EC } = pkg;
+
+const ec = new EC('secp256k1');
 
 class Blockchain
 {
@@ -29,10 +33,10 @@ class Blockchain
 
     // }
 
-    minePendingTransactions()
+    minePendingTransactions(minerAddress)
     {
         const rewardTx = new Transaction(null , minerAddress , this.miningReward);
-        this.miningReward.push(rewardTx);
+        this.pendingTransactions.push(rewardTx);
         
         let block = new Block(Date.now() , this.pendingTransactions);
         block.prevHash = this.getLatestBlock().hash;
