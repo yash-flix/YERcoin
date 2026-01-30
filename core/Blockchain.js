@@ -24,15 +24,6 @@ class Blockchain
         return this.chain[this.chain.length-1];
 
     }
-    // addBlock(newBlock)
-    // {
-    //     newBlock.prevHash = this.getLatestBlock().hash;
-    //     // newBlock.hash = newBlock.calculateHash();
-    //     newBlock.mineBlock(this.difficulty)
-    //     this.chain.push(newBlock);
-
-    // }
-
     minePendingTransactions(minerAddress)
     {
         const rewardTx = new Transaction(null , minerAddress , this.miningReward);
@@ -58,10 +49,15 @@ class Blockchain
         {
             throw new Error("Cannot add invalid transaction to the chain")
         }
+        const senderBalance = this.getBalanceOfAddress(transaction.fromAddress , true);
+        if(senderBalance < transaction.amount)
+        {
+            throw new Error("Insufficient balance")
+        }
         this.pendingTransactions.push(transaction);
     }
 
-    getBalanceOfAddress(address)
+    getBalanceOfAddress(address , includePending=false)
     {
         let balance = 0;
         for(const block of this.chain)
@@ -76,70 +72,87 @@ class Blockchain
                 {
                     balance += trans.amount;
                 }
-                
+            }
+            if(includePending)
+            {
+                for(const tx of this.pendingTransactions)
+                {
+                    if(tx.fromAddress == address)
+                    {
+                        balance -= tx.amount;
+                    }
+                }
             }
         }
         return balance;
     }
-    ischainValid()
-    {
-        for(let i =0 ; i<this.chain.length;i++)
-        {
-            let currentBlock = this.chain[i];
-            let previousBlock = this.chain[i-1];
 
-            if(!currentBlock.hasValidTransaction())
-            {
-                return false;
-            }
+ ischainValid() 
+ {
+    for (let i = 1; i < this.chain.length; i++) {
+    const currentBlock = this.chain[i];
+    const previousBlock = this.chain[i - 1];
 
-            if(currentBlock.hash != currentBlock.calculateHash())
-            {
-                return false;
-            }
-            if(currentBlock.prevHash != previousBlock.hash )
-            {
-                return false;
-            }
-        }
-        return true;
+    // Transactions must be valid
+    if (!currentBlock.hasValidTransaction()) {
+      return false;
     }
+
+    // Block must not be empty
+    if (currentBlock.transactions.length === 0) {
+      return false;
+    }
+
+    // Mining reward rules
+    let rewardTxCount = 0;
+    for (const tx of currentBlock.transactions) {
+      if (tx.fromAddress === null) {
+        rewardTxCount++;
+        if (tx.amount !== this.miningReward) {
+          return false;
+        }
+      }
+    }
+    if (rewardTxCount !== 1) {
+      return false;
+    }
+
+    // Proof of Work validation
+    if (!currentBlock.hash.startsWith("0".repeat(this.difficulty))) {
+      return false;
+    }
+
+    // Hash integrity
+    if (currentBlock.hash !== currentBlock.calculateHash()) {
+      return false;
+    }
+
+    // Chain linkage
+    if (currentBlock.prevHash !== previousBlock.hash) {
+      return false;
+    }
+  }
+  return true;
+}
 
 }
 
 let YERcoin = new Blockchain();
 
-// console.log("Mining Block 1...")
-// YERcoin.addBlock(new Block(1 ,"02/01/2026" , {amount: 4}));
-// console.log("Mining Block 2...")
-// YERcoin.addBlock(new Block(2 ,"03/01/2026" , {amount: 10}));
-
-//checking if the chains are contigious
-// console.log("Is the block chain valid?" + YERcoin.ischainValid()); 
-
-//tempering the chain
-//YERcoin.chain[1].data = {amount : 100};
-// console.log("Is the block chain valid?" + YERcoin.ischainValid()); -> false , tempering detected 
-
-// console.log(JSON.stringify(YERcoin , null , 4));
 
 const myKey = ec.keyFromPrivate("44c0e75657dfe8ef3313b26f9d1c566eab44e94a4ad43e582f49513ef2ff9803");
-const myWalletAddress = myKey.getPublic('hex');
+const myWalletAddress = myKey.getPublic('hex'); //my Wallet address =  private key + public key 
 
 const tx1 = new Transaction(myWalletAddress , "public key goes here" , 10);
 tx1.signTransaction(myKey);
 YERcoin.addTransaction(tx1);
 
-// YERcoin.createTransaction(new Transaction('address1' , 'address2' , 100));
-// YERcoin.createTransaction(new Transaction('address2' , 'address1' , 50));
+
 
 console.log("/n Starting the mining...")
 YERcoin.minePendingTransactions(myWalletAddress);
 
 console.log("\n Balance of Xavier is" , YERcoin.getBalanceOfAddress(myWalletAddress));
 
-// console.log("/n Starting the mining again...")
-// YERcoin.minePendingTransactions("xaviers-address"); 
-// console.log("\n Balance of Xavier is" , YERcoin.getBalanceOfAddress("xaviers-address"));
 
 export default Blockchain;
