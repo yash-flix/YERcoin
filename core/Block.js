@@ -9,7 +9,7 @@ class Block
         this.transactions = transactions;
         this.prevHash = prevHash;
         this.hash= this.calculateHash();
-        this.nonce = 0;
+        this.nonce = 0; // attempts to mine the block
     }
 
     calculateHash()

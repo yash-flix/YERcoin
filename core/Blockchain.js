@@ -31,12 +31,13 @@ class Blockchain
         
         let block = new Block(Date.now() , this.pendingTransactions);
         block.prevHash = this.getLatestBlock().hash;
-        block.mineBlock(this.difficulty);
+        block.mineBlock(this.difficulty); // performs proof of work
 
         console.log('Block successfully mined');
         this.chain.push(block);
 
         this.pendingTransactions = [];
+        return block;
     }
 
     addTransaction(transaction)
@@ -49,7 +50,7 @@ class Blockchain
         {
             throw new Error("Cannot add invalid transaction to the chain")
         }
-        
+
         const senderBalance = this.getBalanceOfAddress(transaction.fromAddress , true);
         if(senderBalance < transaction.amount)
         {
@@ -144,16 +145,20 @@ let YERcoin = new Blockchain();
 const myKey = ec.keyFromPrivate("44c0e75657dfe8ef3313b26f9d1c566eab44e94a4ad43e582f49513ef2ff9803");
 const myWalletAddress = myKey.getPublic('hex'); // myKey = KEY OBJECT (contains both private + public, keep secret!)
 
+// Mine first block to get initial balance
+console.log("\nStarting the mining to get initial balance...")
+YERcoin.minePendingTransactions(myWalletAddress);
+
+console.log("\nBalance after first mine:", YERcoin.getBalanceOfAddress(myWalletAddress));
+
 const tx1 = new Transaction(myWalletAddress , "public key goes here" , 10);
 tx1.signTransaction(myKey);
 YERcoin.addTransaction(tx1);
 
-
-
-console.log("/n Starting the mining...")
+console.log("\nStarting the mining for transaction...")
 YERcoin.minePendingTransactions(myWalletAddress);
 
-console.log("\n Balance of Xavier is" , YERcoin.getBalanceOfAddress(myWalletAddress));
+console.log("\nBalance after transaction:", YERcoin.getBalanceOfAddress(myWalletAddress));
 
 
 export default Blockchain;
