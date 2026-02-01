@@ -16,7 +16,7 @@ class Block
     {
         return SHA256( this.timestamp + JSON.stringify(this.transactions) + this.prevHash + this.nonce).toString();
     }
-    mineBlock(difficulty)
+    mineBlock(difficulty) // proof of work
     {
         while(this.hash.substring(0,difficulty)!= Array(difficulty+1).join("0"))
         {

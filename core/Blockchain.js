@@ -49,6 +49,7 @@ class Blockchain
         {
             throw new Error("Cannot add invalid transaction to the chain")
         }
+        
         const senderBalance = this.getBalanceOfAddress(transaction.fromAddress , true);
         if(senderBalance < transaction.amount)
         {
@@ -108,7 +109,7 @@ class Blockchain
     for (const tx of currentBlock.transactions) {
       if (tx.fromAddress === null) {
         rewardTxCount++;
-        if (tx.amount !== this.miningReward) {
+        if (tx.amount !== this.miningReward) {  // Reward must be exactly 100 coins
           return false;
         }
       }
@@ -141,7 +142,7 @@ let YERcoin = new Blockchain();
 
 
 const myKey = ec.keyFromPrivate("44c0e75657dfe8ef3313b26f9d1c566eab44e94a4ad43e582f49513ef2ff9803");
-const myWalletAddress = myKey.getPublic('hex'); //my Wallet address =  private key + public key 
+const myWalletAddress = myKey.getPublic('hex'); // myKey = KEY OBJECT (contains both private + public, keep secret!)
 
 const tx1 = new Transaction(myWalletAddress , "public key goes here" , 10);
 tx1.signTransaction(myKey);
