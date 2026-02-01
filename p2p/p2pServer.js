@@ -2,11 +2,12 @@
 import WebSocket, { WebSocketServer } from "ws";
 
 const MESSAGE_TYPES = {
-  NEW_BLOCK: "NEW_BLOCK"
+  NEW_BLOCK: "NEW_BLOCK", //when someone mines a block
+  NEW_TRANSACTION : "NEW_TRANSACTION" //when someone creates a new transaction
 };
 
 function createP2PServer(blockchain) {
-  const sockets = [];
+  const sockets = []; //Stores all active WebSocket connections
 
   function listen(port) {
     const server = new WebSocketServer({ port });
@@ -40,8 +41,12 @@ function createP2PServer(blockchain) {
     if (message.type === MESSAGE_TYPES.NEW_BLOCK) {
       handleNewBlock(message.data);
     }
+    if(message.type === MESSAGE_TYPES.NEW_TRANSACTION)
+    {
+        handleTranction(message.data);
+    }
   }
-
+//handles a new block
   function handleNewBlock(block) {
     const latestBlock = blockchain.getLatestBlock();
 
@@ -59,7 +64,18 @@ function createP2PServer(blockchain) {
       console.log(" New block accepted from peer");
     }
   }
-
+  //handles the incoming transaction
+  function handleTranction(transaction)
+  {
+    try{
+        blockchain.addTransaction(transaction);
+        console.log("New transaction added to pending transactions");
+    }catch(err)
+    {
+        console.log("Transaction rejected: " + err);
+    }
+  }
+//braodcasts the new block to all peers
   function broadcastNewBlock(block) {
     sockets.forEach(socket => {
       socket.send(
@@ -70,12 +86,24 @@ function createP2PServer(blockchain) {
       );
     });
   }
-
+  //broadcasts the new transaction to all peers
+function broadcastTransaction(transaction)
+{
+    sockets.forEach(socket=>{
+        socket.send(
+            JSON.stringify({
+                type:MESSAGE_TYPES.NEW_TRANSACTION,
+                data : transaction
+            })
+        );
+    });
+}
  
   return {
     listen,
     connectToPeer,
-    broadcastNewBlock
+    broadcastNewBlock,
+    broadcastTransaction
   };
 }
 

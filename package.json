@@ -1,9 +1,10 @@
 {
+  "type": "module",
   "dependencies": {
     "crypto-js": "^4.2.0",
     "elliptic": "^6.6.1",
     "express": "^5.2.1",
     "ws": "^8.19.0",
-    "type" : "module"
+    "dotenv": "^16.0.0"
   }
 }
